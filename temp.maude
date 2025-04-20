@@ -1,0 +1,270 @@
+fmod BIT is
+    sort Bit .
+    ops 0 1 : -> Bit [ctor] .
+endfm
+
+fmod BASIS is
+    sort Basis .
+    ops + x : -> Basis [ctor] .
+endfm
+
+fmod QUBIT is
+    pr BIT .
+    pr BASIS .
+    
+    sort Qubit  .
+    op qubit : Bit Basis -> Qubit [ctor] .
+    --- abbreviated notation
+    ops |0> |1> |+> |-> : -> Qubit .
+    eq |0> = qubit(0, +) .
+    eq |1> = qubit(1, +) .
+    eq |+> = qubit(0, x) .
+    eq |-> = qubit(1, x) .
+endfm
+
+fmod KNOWLEDGE is
+    pr QUBIT .
+    pr NAT .
+
+    sorts KeyIdx BasisIdx Knowledge .
+    subsort KeyIdx BasisIdx < Knowledge .
+    
+    op key : Bit Nat -> KeyIdx [ctor] .
+    op basis : Basis Nat -> BasisIdx [ctor] .
+    op emp : -> Knowledge [ctor] .
+    op __ : Knowledge Knowledge -> Knowledge [ctor comm assoc id: emp] .
+    --- eq K:Knowledge K:Knowledge = K:Knowledge .
+endfm
+
+fmod ACK is
+    sort Ack .
+    ops ok notOk : -> Ack [ctor] .
+endfm
+
+view Basis from TRIV to BASIS is
+    sort Elt to Basis .
+endv
+
+view Qubit from TRIV to QUBIT is
+    sort Elt to Qubit .
+endv
+
+view Ack from TRIV to ACK is
+    sort Elt to Ack .
+endv
+
+fmod ILIST {D :: TRIV} is
+    pr NAT .
+    sort IList{D} .
+    subsort D$Elt < IList{D} .
+    op nil : -> IList{D} [ctor] .
+    op _|_ : IList{D} IList{D} -> IList{D} [ctor assoc id: nil] .
+    op _\in_ : D$Elt IList{D} -> Bool .
+    op size : IList{D} -> Nat .
+    var E : D$Elt .
+    vars L L1 L2 : IList{D} .
+    eq E \in (L1 | E | L2)  = true .
+    eq E \in L = false [owise] .
+    eq size(nil) = 0 .
+    eq size(E | L) = size(L) + 1 .
+endfm
+
+fmod SOUP {D :: TRIV} is
+  sort Soup{D} .
+  subsort D$Elt < Soup{D} .
+  op empty : -> Soup{D} [ctor] .
+  op __ : Soup{D} Soup{D} -> Soup{D} [ctor assoc comm id: empty] .
+endfm
+
+fmod STATUS is
+    sort Status .
+    ops idle init active done : -> Status [ctor] .
+    ops aInitKey aInitBasis : -> Status [ctor] .
+endfm
+
+fmod OCOMP is
+    pr KNOWLEDGE .
+    pr STATUS .
+    pr ILIST{Qubit} .
+    pr ILIST{Basis} .
+    pr ILIST{Ack} .
+    pr NAT .
+
+    sort OComp .
+
+    op (alice:_) : Knowledge -> OComp [ctor] .
+    op (bob:_) : Knowledge -> OComp [ctor] .
+    op (eva:_) : Knowledge -> OComp [ctor] .
+    op (ch:_) : IList{Qubit} -> OComp [ctor] .
+    op (a2b:_) : IList{Ack} -> OComp [ctor] .
+    op (b2a:_) : IList{Basis} -> OComp [ctor] .
+    op (status:_) : Status -> OComp [ctor] .
+    op (cnt:_) : Nat -> OComp [ctor] .
+endfm
+
+view OComp from TRIV to OCOMP is
+    sort Elt to OComp .
+endv
+
+fmod OCOMP-SOUP is
+    pr SOUP{OComp} .
+endfm
+
+fmod CONFIG is
+    pr OCOMP-SOUP .
+    sorts Config .
+    op {_} : Soup{OComp} -> Config [ctor] .
+    op initial : -> Config .
+    eq initial = { 
+        (alice: emp) (eva: emp) (bob: emp)
+        (status: idle)
+        (ch: nil)
+        (b2a: nil)
+        (a2b: nil)
+        (cnt: 2)
+    } .
+endfm
+
+red initial .
+
+mod BB84 is
+    pr CONFIG .
+
+    var OCs : Soup{OComp} .
+    var N : Nat .
+    vars AK BK EK : Knowledge .
+    
+    --- initialization
+    crl [init] : { (status: idle) (cnt: N) OCs } 
+    => { (status: aInitKey) (cnt: N) OCs } if N > 0 .
+
+    rl [aInitKey0] : { (status: aInitKey) (alice: AK) (cnt: N) OCs }
+    => { (status: aInitBasis) (alice: (key(0, N) AK)) OCs } .
+
+    rl [aInitKey1] : { (status: aInitKey) (alice: AK) (cnt: N) OCs }
+    => { (status: aInitBasis) (alice: (key(1, N) AK)) OCs } .
+endm
+
+--- search in BB84 : initial =>+ C:Config .
+eof
+
+mod DATA is
+    pr BIT .
+    pr BASIS .
+    pr QUBIT .
+
+    sort MeaResult .
+    op {_,_} : Bit Qubit -> MeaResult .
+
+    op data : Bit Basis -> Qubit .
+    eq data(0, +) = |0> .
+    eq data(1, +) = |1> .
+    eq data(0, x) = |+> .
+    eq data(1, x) = |-> .
+
+    op measure : Qubit Basis -> MeaResult .
+    eq measure(|0>, +) = {0, |0>} .
+    eq measure(|1>, +) = {1, |1>} .
+    rl measure(|0>, x) => {0, |+>} .
+    rl measure(|0>, x) => {1, |->} .
+    rl measure(|1>, x) => {0, |+>} .
+    rl measure(|1>, x) => {1, |->} .
+
+    eq measure(|+>, x) = {0, |+>} .
+    eq measure(|->, x) = {1, |->} .
+    rl measure(|+>, +) => {0, |0>} .
+    rl measure(|+>, +) => {1, |1>} .
+    rl measure(|->, +) => {0, |0>} .
+    rl measure(|->, +) => {1, |1>} .
+endm
+
+mod BB84 is
+    sort Prin .
+    ops alice bob eva : -> Prin [ctor] .
+
+     --- Message list
+    op nil : -> MsgList [ctor] .
+    op _;_ : MsgList MsgList -> MsgList [assoc id: nil] .
+
+    --- Configuration
+    op <_;_> : MsgList RoundNum -> Configuration [ctor] .
+
+    --- Initial configuration
+    op init : -> Configuration .
+    eq init = < nil ; 0 > .
+
+    --- Rule: Alice sends qubit
+    rl [AliceSend] : <  ; N > => < send(alice, q, +, N) ; M ; N > .
+
+    
+endm
+
+
+
+cnt: N
+idx: IDX
+< alice | key(0, IDX), basis(+, IDX) >
+< eva | basis(+, IDX) >
+< bob | basis(+, IDX) >
+ch: nil
+a2b: nil --- basis used together with index
+b2a: nil --- ok, notOk
+
+=> 
+
+ch: qubit(alice, 0, +, IDX)
+< eva | basis(+, IDX) >
+=>
+ch: qubit(eva, 0, x, IDX)
+< eva | key(0, IDX) basis(+, IDX) > 50%
+OR
+ch: qubit(eva, 1, x, IDX)
+< eva | key(1, IDX) basis(+, IDX) > 50%
+
+
+ch: qubit(eva, 1, x, IDX)
+< eva | key(1, IDX) basis(+, IDX) > 50%
+< bob | basis(+, IDX) >
+=> 
+< bob | basis(+, IDX) key(1, IDX)>
+b2a: basis(+, IDX)
+
+
+< nil | alice | cnt: N >
+< nil | bob   | cnt: N >
+< nil | eva   | cnt: N >
+
+< alice | bit: 0, basis: + >
+ch: qubit(alice, 0, +)
+=> 
+< alice | bit: 0, basis: + >
+ch: qubit(alice, 0, +)
+< eva | basis: x >
+=>
+< alice | bit: 0, basis: + >
+ch: qubit(eva, 0, x)
+< eva | basis: x, bit: 0 >
+< bob | basis: + >
+
+
+round: 0
+current: 0
+count: 2
+=>
+< nil | bit: 0, basis: +, idx: 0 > 
+round: 1
+current: 0
+=>
+< alice | bit: 0, basis: +, idx: 0 > 
+send(alice, state(0, +))
+round: 1
+current: 0
+=>
+< alice | bit: 0, basis: +, idx: 0 > 
+send(alice, state(0, +))
+< eva | basis: +, bit : 0 >
+=>
+< alice | bit: 0, basis: +, idx: 0 > 
+measure(eva, state(0, +), +)
+< eva | basis: +, bit : 0 >
+

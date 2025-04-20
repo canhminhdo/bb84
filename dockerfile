@@ -1,0 +1,8 @@
+FROM ghcr.io/fadoss/umaudemc:latest
+
+RUN mkdir -p /install
+COPY install/prism-install-ubuntu.sh /install
+RUN cd /install && ./prism-install-ubuntu.sh
+ENV PRISM_PATH=/install/prism/prism/bin
+
+ENTRYPOINT ["/bin/bash"]

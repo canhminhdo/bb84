@@ -1,0 +1,13 @@
+services:
+    app:
+        image: bb84
+        build:
+            context: .
+            dockerfile: dockerfile
+        working_dir: /home
+        volumes:
+            - ./:/home
+        stdin_open: true
+        tty: true
+        # mem_limit: 2G
+        # memswap_limit: 2G

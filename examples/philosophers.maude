@@ -1,0 +1,52 @@
+***
+*** Dining philosophers problem:
+*** testing different strategies and properties
+***
+
+sload model-checker
+
+fmod PHILOSOPHERS-TABLE is protecting NAT .
+    sorts Obj Phil Being List Table .
+    subsorts Obj Phil < Being < List .
+    op (_|_|_) : Obj Nat Obj -> Phil [ctor] .
+    ops o ψ : -> Obj [ctor] .
+    op empty : -> List [ctor] .
+    op __ : List List -> List [ctor assoc id: empty] .
+    op <_> : List -> Table [ctor] .
+    var L : List .
+    ceq < ψ L > = < L ψ > if L =/= empty .
+    op initial : -> Table .
+    eq initial = < (o | 0 | o) ψ (o | 1 | o) ψ (o | 2 | o) ψ > .
+endfm
+
+mod PHILOSOPHERS-DINNER is *** system module
+    protecting PHILOSOPHERS-TABLE .
+    var Id : Nat .
+    var X : Obj .
+    var L : List .
+    
+    rl [left] : ψ (o | Id | X) => (ψ | Id | X) .
+    rl [right] : (X | Id | o) ψ => (X | Id | ψ) .
+    rl [left] : < (o | Id | X) L ψ > => < (ψ | Id | X) L > .
+    rl [release] : (ψ | Id | ψ) => ψ (o | Id | o) ψ .
+endm
+
+mod PHILOSOPHERS-PREDS is
+    protecting PHILOSOPHERS-DINNER .
+    including SATISFACTION .
+    
+    subsort Table < State .
+    
+    op eats : Nat -> Prop [ctor] .
+    
+    var Id : Nat .
+    vars L M : List .
+
+    eq < L (ψ | Id | ψ) M > |= eats(Id) = true .
+    eq < L > |= eats(Id) = false [owise] .
+endm
+
+mod PHILOSOPHERS-CHECK is
+    protecting PHILOSOPHERS-PREDS . 
+    including MODEL-CHECKER .
+endm
