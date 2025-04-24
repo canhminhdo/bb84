@@ -148,7 +148,7 @@ mod BB84 is
     pr CONFIG .
 
     var OCs : Soup{OComp} .
-    var N : Nat .
+    vars N N' : Nat .
     vars AK BK EK : Knowledge .
     vars K K' : Bit .
     vars B B' : Basis .
@@ -226,7 +226,7 @@ mod BB84 is
     { (status: discuss) (b2a: nil) (a2b: nil) (bob: (basis(B, N) BK)) (cnt: N) OCs }
     => { (status: discuss) (b2a: basis(B, N)) (a2b: nil) (bob: (basis(B, N) BK)) (cnt: N) OCs } .
 
-    --- alice sends ackknowledgment to bob
+    --- alice sends acknowledgment to bob
     rl [aliceAckOk] :
     { (status: discuss) (b2a: basis(B, N)) (a2b: nil) (alice: (basis(B, N) AK)) (cnt: N) OCs }
     =>  { (status: discuss) (b2a: basis(B, N)) (a2b: ok) (alice: (ack(ok, N) basis(B, N) AK)) (cnt: N) OCs } .
@@ -236,7 +236,7 @@ mod BB84 is
     =>  { (status: discuss) (b2a: basis(B, N)) (a2b: notOk) (alice: (ack(notOk, N) basis(B', N) AK)) (cnt: N) OCs }
     if B =/= B' .
     
-    --- bob confirms ackknowledgment from bob
+    --- bob confirms acknowledgment from bob
     rl [bConfirmAck] :
     { (status: discuss) (b2a: basis(B, N)) (a2b: ACK) (bob: (basis(B, N) BK)) (cnt: N) OCs }
     =>  { (status: idle) (b2a: nil) (a2b: nil) (bob: (ack(ACK, N) basis(B, N) BK)) (cnt: sd(N, 1)) OCs } .
@@ -251,6 +251,7 @@ mod BB84-PREDS is
     subsort Config < State .
     
     op endAll : -> Prop [ctor] .
+    op notOkAt : Nat -> Prop [ctor] .
     op evaDetectedAt : Nat -> Prop [ctor] .
     op evaCorrectAt : Nat -> Prop [ctor] .
     
@@ -262,6 +263,9 @@ mod BB84-PREDS is
 
     eq { (cnt: 0) OCs } |= endAll = true .
     eq { OCs } |= endAll = false [owise] .
+
+    eq { (alice: (ack(notOk, Idx) AK)) (bob: (ack(notOk, Idx) BK)) OCs } |= notOkAt(Idx) = true .
+    eq { OCs } |= notOkAt(Idx) = false [owise] .
 
     ceq { (alice: (basis(B, Idx) key(K, Idx) AK)) (bob: (basis(B, Idx) key(K', Idx) BK)) OCs } |=  evaDetectedAt(Idx) = true if K =/= K' .
     eq { OCs } |= evaDetectedAt(Idx) = false [owise] .
@@ -283,6 +287,10 @@ mod BB84-FORMULAE is
     op evaCorrectAll : Nat -> Formula .
     eq evaCorrectAll(0) = True .
     ceq evaCorrectAll(N) = evaCorrectAll(sd(N, 1)) /\ evaCorrectAt(N) if N > 0 .
+
+    op secureKeys : Nat -> Formula .
+    eq secureKeys(0) = True .
+    ceq secureKeys(N) = secureKeys(sd(N, 1)) /\ (evaDetectedAt(N) |-> notOkAt(N)) if N > 0 .
 endm
 
 mod BB84-CHECK is
@@ -290,11 +298,20 @@ mod BB84-CHECK is
     including MODEL-CHECKER .
 endm
 
---- red in BB84-CHECK : modelCheck(init2, <> reach) .
+red in BB84-CHECK : modelCheck(init2, <> endAll) .
+
+--- red in BB84-CHECK : modelCheck(init2, [] ~ evaDetected(2)) .
+--- red in BB84-CHECK : modelCheck(init2, (~ [] <> evaCorrectAll(2)) -> <> evaDetected(2)) .
+--- red in BB84-CHECK : modelCheck(init2, secureKeys(2)) .
+--- red in BB84-CHECK : modelCheck(init2, <> endAll) .
 --- red in BB84-CHECK : modelCheck(init2, <> evaDetected(2)) .
+--- red in BB84-CHECK : modelCheck(init2, [] ~ evaDetected(2)) .
+--- red in BB84-CHECK : modelCheck(init2, secureKeys(2)) .
 --- red in BB84-CHECK : modelCheck(init2, [] (evaCorrectAll(2) => ~ evaDetected(2))) .
 --- red in BB84-CHECK : modelCheck(init2, [] (evaCorrectAt(1) => ~ evaDetectedAt(1) /\ evaCorrectAt(2) => ~ evaDetectedAt(2))) .
 --- search in BB84 : init2 =>! C:Config .
+--- umaudemc check bb84.maude init2 'E <> evaDetected(2)'
+--- umaudemc check bb84.maude init2 '(A E ~ evaCorrectAll(2)) -> E <> evaDetected(2)'
 --- umaudemc pcheck bb84.maude init2 '<> endAll' 
 --- umaudemc pcheck bb84.maude init2 '<> evaDetected(2)'
 --- umaudemc pcheck bb84.maude init3 '<> evaDetected(3)'
