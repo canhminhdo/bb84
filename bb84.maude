@@ -272,9 +272,9 @@ mod BB84-FORMULAE is
     eq keyAgreement(0) = True .
     ceq keyAgreement(N) = keyAgreement(sd(N, 1)) /\ (sameBasis(N) /\ ([] ~ evaPresent(N))) |-> sameKey(N) if N > 0 .
 
-    op evaDection : Nat -> Formula .
-    eq evaDection(0) = True .
-    ceq evaDection(N) = evaDection(sd(N, 1)) /\ (sameBasis(N) /\ <> evaPresent(N)) |-> sameKey(N) if N > 0 .
+    op evaNotDetected : Nat -> Formula .
+    eq evaNotDetected(0) = True .
+    ceq evaNotDetected(N) = evaNotDetected(sd(N, 1)) /\ (sameBasis(N) /\ <> evaPresent(N)) |-> sameKey(N) if N > 0 .
 endm
 
 mod BB84-CHECK is
@@ -282,12 +282,12 @@ mod BB84-CHECK is
     including MODEL-CHECKER .
 endm
 
-red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ ([] ~ evaPresent(1))) |-> sameKey(1) ) .
-red in BB84-CHECK : modelCheck(init2, (sameBasis(2) /\ ([] ~ evaPresent(2))) |-> sameKey(2) ) .
-red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ (<> (evaPresent(1) /\ evaSameBasis(1)))) |-> sameKey(1) ) .
-red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ <> evaPresent(1)) |-> sameKey(1) ) .
+--- red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ ([] ~ evaPresent(1))) |-> sameKey(1) ) .
+--- red in BB84-CHECK : modelCheck(init2, (sameBasis(2) /\ ([] ~ evaPresent(2))) |-> sameKey(2) ) .
+--- red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ (<> (evaPresent(1) /\ evaSameBasis(1)))) |-> sameKey(1) ) .
+--- red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ <> evaPresent(1)) |-> sameKey(1) ) .
 red in BB84-CHECK : modelCheck(init2, keyAgreement(2)) .
-red in BB84-CHECK : modelCheck(init2, evaDection(2)) .
+red in BB84-CHECK : modelCheck(init2, evaNotDetected(2)) .
 
 --- search in BB84 : init2 =>! C:Config .
 --- umaudemc check bb84.maude init2 'E <> evaDetected(2)'
