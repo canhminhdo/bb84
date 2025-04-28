@@ -168,34 +168,34 @@ mod BB84 is
     => { (status: exchange) (ch: qubit(K, B)) (alice: (key(K, N) basis(B, N) AK)) (cnt: N) OCs } .
 
     --- eva intercepts and resends the qubit
-    crl [eCorrectBasis] :
+    crl [eSameBasis] :
     { (status: exchange) (ch: qubit(K, B)) (eva: (basis(B, N) EK)) (cnt: N) OCs }
     => { (status: exchange) (ch: qubit(K, B)) (eva: (key(K, N) basis(B, N) EK)) (cnt: N) OCs } 
     if not existKeyByIdx(EK, N) .
 
-    crl [eInCorrectBasis1] :
+    crl [eNotSameBasis1] :
     { (status: exchange) (ch: qubit(K, B)) (eva: (basis(B', N) EK)) (cnt: N) OCs }
     => { (status: exchange) (ch: qubit(0, B')) (eva: (key(0, N) basis(B', N) EK)) (cnt: N) OCs } 
     if not existKeyByIdx(EK, N)
     /\ B =/= B' .
 
-    crl [eInCorrectBasis2] :
+    crl [eNotSameBasis2] :
     { (status: exchange) (ch: qubit(K, B)) (eva: (basis(B', N) EK)) (cnt: N) OCs }
     => { (status: exchange) (ch: qubit(1, B')) (eva: (key(1, N) basis(B', N) EK)) (cnt: N) OCs } 
     if not existKeyByIdx(EK, N)
     /\ B =/= B' .
     
     --- bob measures the qubit
-    rl [bCorrectBasis] :
+    rl [bSameBasis] :
     { (status: exchange) (ch: qubit(K, B)) (bob: (basis(B, N) BK)) (cnt: N) OCs }
     => { (status: discuss) (ch: nil) (bob: (key(K, N) basis(B, N) BK)) (cnt: N) OCs } .
     
-    crl [bInCorrectBasis1] :
+    crl [bNotSameBasis1] :
     { (status: exchange) (ch: qubit(K, B)) (bob: (basis(B', N) BK)) (cnt: N) OCs }
     => { (status: discuss) (ch: nil) (bob: (key(0, N) basis(B', N) BK)) (cnt: N) OCs } 
     if B =/= B' .
 
-    crl [bInCorrectBasis2] :
+    crl [bNotSameBasis2] :
     { (status: exchange) (ch: qubit(K, B)) (bob: (basis(B', N) BK)) (cnt: N) OCs }
     => { (status: discuss) (ch: nil) (bob: (key(1, N) basis(B', N) BK)) (cnt: N) OCs } 
     if B =/= B' .
@@ -206,14 +206,10 @@ mod BB84 is
     => { (status: discuss) (b2a: basis(B, N)) (a2b: nil) (bob: (basis(B, N) BK)) (cnt: N) OCs } .
 
     --- alice sends acknowledgment to bob
-    rl [aliceAckOk] :
-    { (status: discuss) (b2a: basis(B, N)) (a2b: nil) (alice: (basis(B, N) AK)) (cnt: N) OCs }
-    =>  { (status: discuss) (b2a: basis(B, N)) (a2b: ok) (alice: (ack(ok, N) basis(B, N) AK)) (cnt: N) OCs } .
-    
-    crl [aliceAckNotOk] :
+    crl [aliceAck] :
     { (status: discuss) (b2a: basis(B, N)) (a2b: nil) (alice: (basis(B', N) AK)) (cnt: N) OCs }
-    =>  { (status: discuss) (b2a: basis(B, N)) (a2b: notOk) (alice: (ack(notOk, N) basis(B', N) AK)) (cnt: N) OCs }
-    if B =/= B' .
+    =>  { (status: discuss) (b2a: basis(B, N)) (a2b: ACK) (alice: (ack(ACK, N) basis(B', N) AK)) (cnt: N) OCs } 
+    if ACK := (if B == B' then ok else notOk fi).
     
     --- bob confirms acknowledgment from bob
     rl [bConfirmAck] :
