@@ -11,9 +11,7 @@ endfm
 fmod QUBIT is
     pr BIT .
     pr BASIS .
-    
     sort Qubit  .
-
     op qubit : Bit Basis -> Qubit [ctor] .
 endfm
 
