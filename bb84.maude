@@ -55,12 +55,12 @@ view Ack from TRIV to ACK is
     sort Elt to Ack .
 endv
 
-fmod ILIST {D :: TRIV} is
+fmod LIST {D :: TRIV} is
     pr NAT .
-    sort IList{D} .
-    subsort D$Elt < IList{D} .
-    op nil : -> IList{D} [ctor] .
-    op _|_ : IList{D} IList{D} -> IList{D} [ctor assoc id: nil] .
+    sort List{D} .
+    subsort D$Elt < List{D} .
+    op nil : -> List{D} [ctor] .
+    op _|_ : List{D} List{D} -> List{D} [ctor assoc id: nil] .
 endfm
 
 fmod SOUP {D :: TRIV} is
@@ -80,9 +80,9 @@ endfm
 fmod OCOMP is
     pr KNOWLEDGE .
     pr STATUS .
-    pr ILIST{Qubit} .
-    pr ILIST{BasisIdx} .
-    pr ILIST{Ack} .
+    pr LIST{Qubit} .
+    pr LIST{BasisIdx} .
+    pr LIST{Ack} .
     pr NAT .
 
     sort OComp .
@@ -90,9 +90,9 @@ fmod OCOMP is
     op (alice:_) : Knowledge -> OComp [ctor] .
     op (bob:_) : Knowledge -> OComp [ctor] .
     op (eva:_) : Knowledge -> OComp [ctor] .
-    op (ch:_) : IList{Qubit} -> OComp [ctor] .
-    op (a2b:_) : IList{Ack} -> OComp [ctor] .
-    op (b2a:_) : IList{BasisIdx} -> OComp [ctor] .
+    op (ch:_) : List{Qubit} -> OComp [ctor] .
+    op (a2b:_) : List{Ack} -> OComp [ctor] .
+    op (b2a:_) : List{BasisIdx} -> OComp [ctor] .
     op (status:_) : Status -> OComp [ctor] .
     op (cnt:_) : Nat -> OComp [ctor] .
 endfm
