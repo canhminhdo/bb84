@@ -89,7 +89,7 @@ fmod OCOMP is
 
     op (alice:_) : Knowledge -> OComp [ctor] .
     op (bob:_) : Knowledge -> OComp [ctor] .
-    op (eva:_) : Knowledge -> OComp [ctor] .
+    op (eve:_) : Knowledge -> OComp [ctor] .
     op (ch:_) : List{Qubit} -> OComp [ctor] .
     op (a2b:_) : List{Ack} -> OComp [ctor] .
     op (b2a:_) : List{BasisIdx} -> OComp [ctor] .
@@ -110,14 +110,14 @@ fmod CONFIG is
     sorts Config .
     op {_} : Soup{OComp} -> Config [ctor] .
     ops init init2 init3 init4 init5 init10 init15 init20 : -> Config .
-    eq init = { (cnt: 1) (alice: emp) (eva: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
-    eq init2 = { (cnt: 2) (alice: emp) (eva: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
-    eq init3 = { (cnt: 3) (alice: emp) (eva: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
-    eq init4 = { (cnt: 4) (alice: emp) (eva: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
-    eq init5 = { (cnt: 5) (alice: emp) (eva: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
-    eq init10 = { (cnt: 10) (alice: emp) (eva: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
-    eq init15 = { (cnt: 15) (alice: emp) (eva: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
-    eq init20 = { (cnt: 20) (alice: emp) (eva: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init = { (cnt: 1) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init2 = { (cnt: 2) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init3 = { (cnt: 3) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init4 = { (cnt: 4) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init5 = { (cnt: 5) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init10 = { (cnt: 10) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init15 = { (cnt: 15) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init20 = { (cnt: 20) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
 endfm
 
 mod BB84 is
@@ -155,33 +155,33 @@ mod BB84 is
     rl [bInitBasis2] : { (status: bInitBasis) (bob: BK) (cnt: N) OCs }
     => { (status: eInitBasis) (bob: (basis(x, N) BK)) (cnt: N) OCs } .
 
-    --- eva init basis 
-    rl [eInitBasis1] : { (status: eInitBasis) (eva: EK) (cnt: N) OCs }
-    => { (status: exchange) (eva: (basis(+, N) EK)) (cnt: N) OCs } .
+    --- eve init basis 
+    rl [eInitBasis1] : { (status: eInitBasis) (eve: EK) (cnt: N) OCs }
+    => { (status: exchange) (eve: (basis(+, N) EK)) (cnt: N) OCs } .
 
-    rl [eInitBasis2] : { (status: eInitBasis) (eva: EK) (cnt: N) OCs }
-    => { (status: exchange) (eva: (basis(x, N) EK)) (cnt: N) OCs } .
+    rl [eInitBasis2] : { (status: eInitBasis) (eve: EK) (cnt: N) OCs }
+    => { (status: exchange) (eve: (basis(x, N) EK)) (cnt: N) OCs } .
 
     --- alice sends a qubit
     rl [aSend] : 
     { (status: exchange) (ch: nil) (alice: (key(K, N) basis(B, N) AK)) (cnt: N) OCs }
     => { (status: exchange) (ch: qubit(K, B)) (alice: (key(K, N) basis(B, N) AK)) (cnt: N) OCs } .
 
-    --- eva intercepts and resends the qubit
+    --- eve intercepts and resends the qubit
     crl [eSameBasis] :
-    { (status: exchange) (ch: qubit(K, B)) (eva: (basis(B, N) EK)) (cnt: N) OCs }
-    => { (status: exchange) (ch: qubit(K, B)) (eva: (key(K, N) basis(B, N) EK)) (cnt: N) OCs } 
+    { (status: exchange) (ch: qubit(K, B)) (eve: (basis(B, N) EK)) (cnt: N) OCs }
+    => { (status: exchange) (ch: qubit(K, B)) (eve: (key(K, N) basis(B, N) EK)) (cnt: N) OCs } 
     if not existKeyByIdx(EK, N) .
 
     crl [eNotSameBasis1] :
-    { (status: exchange) (ch: qubit(K, B)) (eva: (basis(B', N) EK)) (cnt: N) OCs }
-    => { (status: exchange) (ch: qubit(0, B')) (eva: (key(0, N) basis(B', N) EK)) (cnt: N) OCs } 
+    { (status: exchange) (ch: qubit(K, B)) (eve: (basis(B', N) EK)) (cnt: N) OCs }
+    => { (status: exchange) (ch: qubit(0, B')) (eve: (key(0, N) basis(B', N) EK)) (cnt: N) OCs } 
     if not existKeyByIdx(EK, N)
     /\ B =/= B' .
 
     crl [eNotSameBasis2] :
-    { (status: exchange) (ch: qubit(K, B)) (eva: (basis(B', N) EK)) (cnt: N) OCs }
-    => { (status: exchange) (ch: qubit(1, B')) (eva: (key(1, N) basis(B', N) EK)) (cnt: N) OCs } 
+    { (status: exchange) (ch: qubit(K, B)) (eve: (basis(B', N) EK)) (cnt: N) OCs }
+    => { (status: exchange) (ch: qubit(1, B')) (eve: (key(1, N) basis(B', N) EK)) (cnt: N) OCs } 
     if not existKeyByIdx(EK, N)
     /\ B =/= B' .
     
@@ -228,10 +228,10 @@ mod BB84-PREDS is
     subsort Config < State .
     
     op isEnd : -> Prop [ctor] .
-    op evaPresent : Nat -> Prop [ctor] .
+    op evePresent : Nat -> Prop [ctor] .
     op sameBasis : Nat -> Prop [ctor] .
     op sameKey : Nat -> Prop [ctor] .
-    op evaSameBasis : Nat -> Prop [ctor] .
+    op eveSameBasis : Nat -> Prop [ctor] .
     
     var Idx : Nat .
     var OCs : Soup{OComp} .
@@ -239,8 +239,8 @@ mod BB84-PREDS is
     vars B B' : Basis .
     vars K K' : Bit .
 
-    eq { (eva: (key(K, Idx) EK)) OCs } |= evaPresent(Idx) = true .
-    eq { OCs } |= evaPresent(Idx) = false [owise] .
+    eq { (eve: (key(K, Idx) EK)) OCs } |= evePresent(Idx) = true .
+    eq { OCs } |= evePresent(Idx) = false [owise] .
 
     eq { (alice: (basis(B, Idx) AK)) (bob: (basis(B, Idx) BK)) OCs } |= sameBasis(Idx) = true .
     eq { OCs } |= sameBasis(Idx) = false [owise] .
@@ -248,8 +248,8 @@ mod BB84-PREDS is
     eq { (alice: (key(K, Idx) AK)) (bob: (key(K, Idx) BK)) OCs } |= sameKey(Idx) = true .
     eq { OCs } |= sameKey(Idx) = false [owise] .
 
-    eq { (alice: (basis(B, Idx) AK)) (eva: (basis(B, Idx) EK)) OCs } |= evaSameBasis(Idx) = true .
-    eq { OCs } |= evaSameBasis(Idx) = false [owise] .
+    eq { (alice: (basis(B, Idx) AK)) (eve: (basis(B, Idx) EK)) OCs } |= eveSameBasis(Idx) = true .
+    eq { OCs } |= eveSameBasis(Idx) = false [owise] .
     
     eq { (cnt: 0) OCs } |= isEnd = true .
     eq { OCs } |= isEnd = false [owise] .
@@ -264,11 +264,11 @@ mod BB84-FORMULAE is
 
     op keyAgreement : Nat -> Formula .
     eq keyAgreement(0) = True .
-    ceq keyAgreement(N) = keyAgreement(sd(N, 1)) /\ (sameBasis(N) /\ ([] ~ evaPresent(N))) |-> sameKey(N) if N > 0 .
+    ceq keyAgreement(N) = keyAgreement(sd(N, 1)) /\ (sameBasis(N) /\ ([] ~ evePresent(N))) |-> sameKey(N) if N > 0 .
 
-    op evaNotDetected : Nat -> Formula .
-    eq evaNotDetected(0) = True .
-    ceq evaNotDetected(N) = evaNotDetected(sd(N, 1)) /\ (sameBasis(N) /\ <> evaPresent(N)) |-> sameKey(N) if N > 0 .
+    op eveNotDetected : Nat -> Formula .
+    eq eveNotDetected(0) = True .
+    ceq eveNotDetected(N) = eveNotDetected(sd(N, 1)) /\ (sameBasis(N) /\ evePresent(N)) |-> sameKey(N) if N > 0 .
 endm
 
 mod BB84-CHECK is
@@ -276,18 +276,18 @@ mod BB84-CHECK is
     including MODEL-CHECKER .
 endm
 
---- red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ ([] ~ evaPresent(1))) |-> sameKey(1) ) .
---- red in BB84-CHECK : modelCheck(init2, (sameBasis(2) /\ ([] ~ evaPresent(2))) |-> sameKey(2) ) .
---- red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ (<> (evaPresent(1) /\ evaSameBasis(1)))) |-> sameKey(1) ) .
---- red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ <> evaPresent(1)) |-> sameKey(1) ) .
+--- red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ ([] ~ evePresent(1))) |-> sameKey(1) ) .
+--- red in BB84-CHECK : modelCheck(init2, (sameBasis(2) /\ ([] ~ evePresent(2))) |-> sameKey(2) ) .
+--- red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ (<> (evePresent(1) /\ eveSameBasis(1)))) |-> sameKey(1) ) .
+--- red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ <> evePresent(1)) |-> sameKey(1) ) .
 red in BB84-CHECK : modelCheck(init2, keyAgreement(2)) .
-red in BB84-CHECK : modelCheck(init2, evaNotDetected(2)) .
+red in BB84-CHECK : modelCheck(init2, eveNotDetected(2)) .
 
 --- search in BB84 : init2 =>! C:Config .
---- umaudemc check bb84.maude init2 'E <> evaDetected(2)'
---- umaudemc check bb84.maude init2 '(A E ~ evaCorrectAll(2)) -> E <> evaDetected(2)'
+--- umaudemc check bb84.maude init2 'E <> eveDetected(2)'
+--- umaudemc check bb84.maude init2 '(A E ~ eveCorrectAll(2)) -> E <> eveDetected(2)'
 --- umaudemc pcheck bb84.maude init2 '<> endAll' 
---- umaudemc pcheck bb84.maude init2 '<> evaDetected(2)'
---- umaudemc pcheck bb84.maude init3 '<> evaDetected(3)'
---- umaudemc pcheck bb84.maude init4 '<> evaDetected(4)'
---- umaudemc pcheck bb84.maude init5 '<> evaDetected(5)'
+--- umaudemc pcheck bb84.maude init2 '<> eveDetected(2)'
+--- umaudemc pcheck bb84.maude init3 '<> eveDetected(3)'
+--- umaudemc pcheck bb84.maude init4 '<> eveDetected(4)'
+--- umaudemc pcheck bb84.maude init5 '<> eveDetected(5)'
