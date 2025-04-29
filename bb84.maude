@@ -237,7 +237,7 @@ mod BB84-PREDS is
     var OCs : Soup{OComp} .
     vars AK BK EK : Knowledge .
     vars B B' : Basis .
-    vars K K' : Bit .
+    vars K K' : Bit .   
 
     eq { (eve: (key(K, Idx) EK)) OCs } |= evePresent(Idx) = true .
     eq { OCs } |= evePresent(Idx) = false [owise] .
@@ -276,18 +276,5 @@ mod BB84-CHECK is
     including MODEL-CHECKER .
 endm
 
---- red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ ([] ~ evePresent(1))) |-> sameKey(1) ) .
---- red in BB84-CHECK : modelCheck(init2, (sameBasis(2) /\ ([] ~ evePresent(2))) |-> sameKey(2) ) .
---- red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ (<> (evePresent(1) /\ eveSameBasis(1)))) |-> sameKey(1) ) .
---- red in BB84-CHECK : modelCheck(init2, (sameBasis(1) /\ <> evePresent(1)) |-> sameKey(1) ) .
 red in BB84-CHECK : modelCheck(init2, keyAgreement(2)) .
 red in BB84-CHECK : modelCheck(init2, eveNotDetected(2)) .
-
---- search in BB84 : init2 =>! C:Config .
---- umaudemc check bb84.maude init2 'E <> eveDetected(2)'
---- umaudemc check bb84.maude init2 '(A E ~ eveCorrectAll(2)) -> E <> eveDetected(2)'
---- umaudemc pcheck bb84.maude init2 '<> endAll' 
---- umaudemc pcheck bb84.maude init2 '<> eveDetected(2)'
---- umaudemc pcheck bb84.maude init3 '<> eveDetected(3)'
---- umaudemc pcheck bb84.maude init4 '<> eveDetected(4)'
---- umaudemc pcheck bb84.maude init5 '<> eveDetected(5)'
