@@ -227,11 +227,9 @@ mod BB84-PREDS is
     
     subsort Config < State .
     
-    op isEnd : -> Prop [ctor] .
     op evePresent : Nat -> Prop [ctor] .
     op sameBasis : Nat -> Prop [ctor] .
     op sameKey : Nat -> Prop [ctor] .
-    op eveSameBasis : Nat -> Prop [ctor] .
     
     var Idx : Nat .
     var OCs : Soup{OComp} .
@@ -247,13 +245,6 @@ mod BB84-PREDS is
     
     eq { (alice: (key(K, Idx) AK)) (bob: (key(K, Idx) BK)) OCs } |= sameKey(Idx) = true .
     eq { OCs } |= sameKey(Idx) = false [owise] .
-
-    eq { (alice: (basis(B, Idx) AK)) (eve: (basis(B, Idx) EK)) OCs } |= eveSameBasis(Idx) = true .
-    eq { OCs } |= eveSameBasis(Idx) = false [owise] .
-    
-    eq { (cnt: 0) OCs } |= isEnd = true .
-    eq { OCs } |= isEnd = false [owise] .
-
 endm
 
 mod BB84-FORMULAE is
