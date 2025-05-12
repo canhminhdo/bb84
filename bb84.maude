@@ -257,9 +257,9 @@ mod BB84-FORMULAE is
     eq keyAgreement(0) = True .
     ceq keyAgreement(N) = keyAgreement(sd(N, 1)) /\ (([]~ evePresent(N)) -> (sameBasis(N) |-> sameKey(N))) if N > 0 .
 
-    op eveNotDetected : Nat -> Formula .
-    eq eveNotDetected(0) = True .
-    ceq eveNotDetected(N) = eveNotDetected(sd(N, 1)) /\ ((<> evePresent(N)) -> (sameBasis(N) |-> sameKey(N))) if N > 0 .
+    op eveDetected : Nat -> Formula .
+    eq eveDetected(0) = True .
+    ceq eveDetected(N) = eveDetected(sd(N, 1)) /\ (<> ((sameBasis(N) /\ ~ sameKey(N)) -> evePresent(N))) if N > 0 .
 endm
 
 mod BB84-CHECK is
@@ -272,7 +272,7 @@ red in BB84-CHECK : modelCheck(init2, keyAgreement(2)) .
 --- red in BB84-CHECK : modelCheck(init4, keyAgreement(4)) .
 --- red in BB84-CHECK : modelCheck(init5, keyAgreement(5)) .
 
-red in BB84-CHECK : modelCheck(init2, eveNotDetected(2)) .
---- red in BB84-CHECK : modelCheck(init3, eveNotDetected(3)) .
---- red in BB84-CHECK : modelCheck(init4, eveNotDetected(4)) .
---- red in BB84-CHECK : modelCheck(init5, eveNotDetected(5)) .
+red in BB84-CHECK : modelCheck(init2, eveDetected(2)) .
+--- red in BB84-CHECK : modelCheck(init3, eveDetected(3)) .
+--- red in BB84-CHECK : modelCheck(init4, eveDetected(4)) .
+--- red in BB84-CHECK : modelCheck(init5, eveDetected(5)) .
