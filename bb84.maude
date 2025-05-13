@@ -227,6 +227,7 @@ mod BB84-PREDS is
     
     subsort Config < State .
     
+    op done : Nat -> Prop [ctor] .
     op evePresent : Nat -> Prop [ctor] .
     op sameBasis : Nat -> Prop [ctor] .
     op sameKey : Nat -> Prop [ctor] .
@@ -235,7 +236,11 @@ mod BB84-PREDS is
     var OCs : Soup{OComp} .
     vars AK BK EK : Knowledge .
     vars B B' : Basis .
-    vars K K' : Bit .   
+    vars K K' : Bit .
+    vars ACK ACK' : Ack .
+
+    eq { (alice: (ack(ACK, Idx) EK)) (bob: (ack(ACK', Idx) EK)) OCs } |= done(Idx) = true .
+    eq { OCs } |= done(Idx) = false [owise] .
 
     eq { (eve: (key(K, Idx) EK)) OCs } |= evePresent(Idx) = true .
     eq { OCs } |= evePresent(Idx) = false [owise] .
@@ -255,11 +260,11 @@ mod BB84-FORMULAE is
 
     op keyAgreement : Nat -> Formula .
     eq keyAgreement(0) = True .
-    ceq keyAgreement(N) = keyAgreement(sd(N, 1)) /\ (([]~ evePresent(N)) -> (sameBasis(N) |-> sameKey(N))) if N > 0 .
+    ceq keyAgreement(N) = keyAgreement(sd(N, 1)) /\ [] ((done(N) /\ ~ evePresent(N)) -> (sameBasis(N) |-> sameKey(N))) if N > 0 .
 
     op eveDetected : Nat -> Formula .
     eq eveDetected(0) = True .
-    ceq eveDetected(N) = eveDetected(sd(N, 1)) /\ (<>[] ((sameBasis(N) /\ ~ sameKey(N)) -> evePresent(N))) if N > 0 .
+    ceq eveDetected(N) = eveDetected(sd(N, 1)) /\ [] ((done(N) /\ sameBasis(N) /\ ~ sameKey(N)) -> evePresent(N)) if N > 0 .
 endm
 
 mod BB84-CHECK is
