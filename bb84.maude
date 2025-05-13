@@ -259,7 +259,7 @@ mod BB84-FORMULAE is
 
     op eveDetected : Nat -> Formula .
     eq eveDetected(0) = True .
-    ceq eveDetected(N) = eveDetected(sd(N, 1)) /\ (<> ((sameBasis(N) /\ ~ sameKey(N)) -> evePresent(N))) if N > 0 .
+    ceq eveDetected(N) = eveDetected(sd(N, 1)) /\ (<>[] ((sameBasis(N) /\ ~ sameKey(N)) -> evePresent(N))) if N > 0 .
 endm
 
 mod BB84-CHECK is
