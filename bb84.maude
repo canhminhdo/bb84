@@ -260,11 +260,11 @@ mod BB84-FORMULAE is
 
     op keyAgreement : Nat -> Formula .
     eq keyAgreement(0) = True .
-    ceq keyAgreement(N) = keyAgreement(sd(N, 1)) /\ ([] ((done(N) /\ ~ evePresent(N) /\ sameBasis(N)) -> sameKey(N))) if N > 0 .
+    ceq keyAgreement(N) = keyAgreement(sd(N, 1)) /\ ([] ((sameBasis(N) /\ ~ evePresent(N) /\ done(N)) -> sameKey(N))) if N > 0 .
 
     op eveDetected : Nat -> Formula .
     eq eveDetected(0) = True .
-    ceq eveDetected(N) = eveDetected(sd(N, 1)) /\ ([] ((done(N) /\ sameBasis(N) /\ ~ sameKey(N)) -> evePresent(N))) if N > 0 .
+    ceq eveDetected(N) = eveDetected(sd(N, 1)) /\ ([] ((sameBasis(N) /\ ~ sameKey(N) /\ done(N)) -> evePresent(N))) if N > 0 .
 endm
 
 mod BB84-CHECK is
