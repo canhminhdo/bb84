@@ -1,0 +1,33 @@
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Ack .
+  op s : -> Sys .
+  eq hasAck(rAcks(s),r1) = true .
+  red inv1(s,r) implies inv1(cfm(s,r1,r2),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Ack .
+  op s : -> Sys .
+  eq hasAck(rAcks(s),r1) = false .
+  eq (m2(r1,r2) \in nw(s)) = true .
+  red inv1(s,r) implies inv1(cfm(s,r1,r2),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Ack .
+  op s : -> Sys .
+  eq hasAck(rAcks(s),r1) = false .
+  eq (m2(r1,r2) \in nw(s)) = false .
+  red inv1(s,r) implies inv1(cfm(s,r1,r2),r) .
+close
+
+--> Time taken is 41ms

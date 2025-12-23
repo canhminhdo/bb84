@@ -1,0 +1,81 @@
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Basis .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq basis(sBases(s),r1) = r2 .
+  eq hasBasis(sBases(s),r1) = true .
+  eq hasKey(sKeys(s),r1) = true .
+  eq hasAck(sAcks(s),r1) = true .
+  red inv1(s,r) implies inv1(sdm2(s,r1,r2,r3),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Basis .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq basis(sBases(s),r1) = r2 .
+  eq hasBasis(sBases(s),r1) = true .
+  eq hasKey(sKeys(s),r1) = true .
+  eq hasAck(sAcks(s),r1) = false .
+  eq (m1(r1,r3) \in nw(s)) = true .
+  red inv1(s,r) implies inv1(sdm2(s,r1,r2,r3),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Basis .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq basis(sBases(s),r1) = r2 .
+  eq hasBasis(sBases(s),r1) = true .
+  eq hasKey(sKeys(s),r1) = true .
+  eq hasAck(sAcks(s),r1) = false .
+  eq (m1(r1,r3) \in nw(s)) = false .
+  red inv1(s,r) implies inv1(sdm2(s,r1,r2,r3),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Basis .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq basis(sBases(s),r1) = r2 .
+  eq hasBasis(sBases(s),r1) = true .
+  eq hasKey(sKeys(s),r1) = false .
+  red inv1(s,r) implies inv1(sdm2(s,r1,r2,r3),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Basis .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq basis(sBases(s),r1) = r2 .
+  eq hasBasis(sBases(s),r1) = false .
+  red inv1(s,r) implies inv1(sdm2(s,r1,r2,r3),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Basis .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq (basis(sBases(s),r1) = r2) = false .
+  red inv1(s,r) implies inv1(sdm2(s,r1,r2,r3),r) .
+close
+
+--> Time taken is 60ms

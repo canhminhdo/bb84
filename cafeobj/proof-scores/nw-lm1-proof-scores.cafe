@@ -1,0 +1,16 @@
+--> base case
+open INV .
+    op nw : -> Network .
+    op r : -> Rand .
+    op a : -> Ack .
+    red nw-lm1(void,r,a) .
+close
+
+--> induction case
+open INV .
+    op nw : -> Network .
+    op m : -> Msg .
+    op r : -> Rand .
+    op a : -> Ack .
+    red nw-lm1(nw,r,a) implies nw-lm1((m,nw),r,a) .
+close

@@ -1,0 +1,54 @@
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Qubit .
+  op r3 : -> Basis .
+  op r4 : -> Key .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = true .
+  red inv1(s,r) implies inv1(fkqm(s,r1,r2,r3,r4),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Qubit .
+  op r3 : -> Basis .
+  op r4 : -> Key .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = false .
+  eq hasBasis(iBases(s),r1) = true .
+  red inv1(s,r) implies inv1(fkqm(s,r1,r2,r3,r4),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Qubit .
+  op r3 : -> Basis .
+  op r4 : -> Key .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = false .
+  eq hasBasis(iBases(s),r1) = false .
+  eq hd(qnw(s)) = qm(r1,r2) .
+  red inv1(s,r) implies inv1(fkqm(s,r1,r2,r3,r4),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Qubit .
+  op r3 : -> Basis .
+  op r4 : -> Key .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = false .
+  eq hasBasis(iBases(s),r1) = false .
+  eq (hd(qnw(s)) = qm(r1,r2)) = false .
+  red inv1(s,r) implies inv1(fkqm(s,r1,r2,r3,r4),r) .
+close
+
+--> Time taken is 48ms

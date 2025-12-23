@@ -1,0 +1,219 @@
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Key .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = true .
+  eq (r1 \in ur(s)) = true .
+  red inv1(s,r) implies inv1(sdqm(s,r1,r2,r3),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Key .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = true .
+  eq (r1 \in ur(s)) = false .
+  eq hasBasis(sBases(s),r1) = true .
+  red inv1(s,r) implies inv1(sdqm(s,r1,r2,r3),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Key .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = true .
+  eq (r1 \in ur(s)) = false .
+  eq hasBasis(sBases(s),r1) = false .
+  eq hasKey(sKeys(s),r1) = true .
+  red inv1(s,r) implies inv1(sdqm(s,r1,r2,r3),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Key .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = true .
+  eq (r1 \in ur(s)) = false .
+  eq hasBasis(sBases(s),r1) = false .
+  eq hasKey(sKeys(s),r1) = false .
+  eq r = r1 .
+  eq basis(rBases(s),r1) = r3 .
+  eq key(rKeys(s),r1) = r2 .
+  red inv1(s,r) implies inv1(sdqm(s,r1,r2,r3),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Key .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = true .
+  eq (r1 \in ur(s)) = false .
+  eq hasBasis(sBases(s),r1) = false .
+  eq hasKey(sKeys(s),r1) = false .
+  eq r = r1 .
+  eq basis(rBases(s),r1) = r3 .
+  eq (key(rKeys(s),r1) = r2) = false .
+  eq hasBasis(rBases(s),r1) = true .
+  eq hasBasis(iBases(s),r1) = true .
+  eq hasKey(iKeys(s),r1) = true .
+  red inv1(s,r) implies inv1(sdqm(s,r1,r2,r3),r) .
+close
+
+--> true, use inv2 as a lemma
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Key .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = true .
+  eq (r1 \in ur(s)) = false .
+  eq hasBasis(sBases(s),r1) = false .
+  eq hasKey(sKeys(s),r1) = false .
+  eq r = r1 .
+  eq basis(rBases(s),r1) = r3 .
+  eq (key(rKeys(s),r1) = r2) = false .
+  eq hasBasis(rBases(s),r1) = true .
+  eq hasBasis(iBases(s),r1) = true .
+  eq hasKey(iKeys(s),r1) = false .
+  eq hasKey(rKeys(s),r1) = true .
+  red inv2(s,r1) implies (inv1(s,r) implies inv1(sdqm(s,r1,r2,r3),r)) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Key .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = true .
+  eq (r1 \in ur(s)) = false .
+  eq hasBasis(sBases(s),r1) = false .
+  eq hasKey(sKeys(s),r1) = false .
+  eq r = r1 .
+  eq basis(rBases(s),r1) = r3 .
+  eq (key(rKeys(s),r1) = r2) = false .
+  eq hasBasis(rBases(s),r1) = true .
+  eq hasBasis(iBases(s),r1) = true .
+  eq hasKey(iKeys(s),r1) = false .
+  eq hasKey(rKeys(s),r1) = false .
+  red inv1(s,r) implies inv1(sdqm(s,r1,r2,r3),r) .
+close
+
+--> true, use inv3 as a lemma
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Key .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = true .
+  eq (r1 \in ur(s)) = false .
+  eq hasBasis(sBases(s),r1) = false .
+  eq hasKey(sKeys(s),r1) = false .
+  eq r = r1 .
+  eq basis(rBases(s),r1) = r3 .
+  eq (key(rKeys(s),r1) = r2) = false .
+  eq hasBasis(rBases(s),r1) = true .
+  eq hasBasis(iBases(s),r1) = false .
+  eq hasKey(rKeys(s),r1) = true .
+  red inv3(s,r1) implies (inv1(s,r) implies inv1(sdqm(s,r1,r2,r3),r)) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Key .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = true .
+  eq (r1 \in ur(s)) = false .
+  eq hasBasis(sBases(s),r1) = false .
+  eq hasKey(sKeys(s),r1) = false .
+  eq r = r1 .
+  eq basis(rBases(s),r1) = r3 .
+  eq (key(rKeys(s),r1) = r2) = false .
+  eq hasBasis(rBases(s),r1) = true .
+  eq hasBasis(iBases(s),r1) = false .
+  eq hasKey(rKeys(s),r1) = false .
+  red inv1(s,r) implies inv1(sdqm(s,r1,r2,r3),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Key .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = true .
+  eq (r1 \in ur(s)) = false .
+  eq hasBasis(sBases(s),r1) = false .
+  eq hasKey(sKeys(s),r1) = false .
+  eq r = r1 .
+  eq basis(rBases(s),r1) = r3 .
+  eq (key(rKeys(s),r1) = r2) = false .
+  eq hasBasis(rBases(s),r1) = false .
+  red inv1(s,r) implies inv1(sdqm(s,r1,r2,r3),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Key .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = true .
+  eq (r1 \in ur(s)) = false .
+  eq hasBasis(sBases(s),r1) = false .
+  eq hasKey(sKeys(s),r1) = false .
+  eq r = r1 .
+  eq (basis(rBases(s),r1) = r3) = false .
+  red inv1(s,r) implies inv1(sdqm(s,r1,r2,r3),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Key .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = true .
+  eq (r1 \in ur(s)) = false .
+  eq hasBasis(sBases(s),r1) = false .
+  eq hasKey(sKeys(s),r1) = false .
+  eq (r = r1) = false .
+  red inv1(s,r) implies inv1(sdqm(s,r1,r2,r3),r) .
+close
+
+--> true
+open INV .
+  op r : -> Rand .
+  op r1 : -> Rand .
+  op r2 : -> Key .
+  op r3 : -> Basis .
+  op s : -> Sys .
+  eq isEmp(qnw(s)) = false .
+  red inv1(s,r) implies inv1(sdqm(s,r1,r2,r3),r) .
+close
+
+--> Time taken is 101ms

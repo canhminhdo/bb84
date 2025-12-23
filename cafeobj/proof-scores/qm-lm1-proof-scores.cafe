@@ -1,0 +1,5 @@
+open INV .
+    ops r r2 : -> Rand .
+    ops kb kb2 : -> Qubit .
+    red qm-lm1(r,r2,kb,kb2) .
+close

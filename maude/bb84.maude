@@ -1,0 +1,283 @@
+fmod BIT is
+    sort Bit .
+    ops 0 1 : -> Bit [ctor] .
+endfm
+
+fmod BASIS is
+    sort Basis .
+    ops + x : -> Basis [ctor] .
+endfm
+
+fmod QUBIT is
+    pr BIT .
+    pr BASIS .
+    sort Qubit  .
+    op qubit : Bit Basis -> Qubit [ctor] .
+endfm
+
+fmod ACK is
+    sort Ack .
+    ops ok notOk : -> Ack [ctor] .
+endfm
+
+fmod KNOWLEDGE is
+    pr QUBIT .
+    pr NAT .
+    pr ACK .
+
+    sorts KeyIdx BasisIdx AckIdx Knowledge .
+    subsorts KeyIdx BasisIdx AckIdx < Knowledge .
+    
+    op key : Bit Nat -> KeyIdx [ctor] .
+    op basis : Basis Nat -> BasisIdx [ctor] .
+    op ack : Ack Nat -> AckIdx [ctor] .
+    op emp : -> Knowledge [ctor] .
+    op __ : Knowledge Knowledge -> Knowledge [ctor comm assoc id: emp] .
+
+    --- check if the key is already in the knowledge    
+    var N : Nat .
+    var K : Bit .
+    var KL : Knowledge .
+    op existKeyByIdx : Knowledge Nat -> Bool .
+    eq existKeyByIdx(key(K, N) KL, N) = true .
+    eq existKeyByIdx(KL, N) = false [owise] .
+endfm
+
+view BasisIdx from TRIV to KNOWLEDGE is
+    sort Elt to BasisIdx .
+endv
+
+view Qubit from TRIV to QUBIT is
+    sort Elt to Qubit .
+endv
+
+view Ack from TRIV to ACK is
+    sort Elt to Ack .
+endv
+
+fmod LIST {D :: TRIV} is
+    pr NAT .
+    sort List{D} .
+    subsort D$Elt < List{D} .
+    op nil : -> List{D} [ctor] .
+    op _|_ : List{D} List{D} -> List{D} [ctor assoc id: nil] .
+endfm
+
+fmod SOUP {D :: TRIV} is
+  sort Soup{D} .
+  subsort D$Elt < Soup{D} .
+  op empty : -> Soup{D} [ctor] .
+  op __ : Soup{D} Soup{D} -> Soup{D} [ctor assoc comm id: empty] .
+endfm
+
+fmod STATUS is
+    sort Status .
+    ops idle init exchange discuss : -> Status [ctor] .
+    ops aInitKey aInitBasis : -> Status [ctor] .
+    ops eInitBasis bInitBasis : -> Status [ctor] .
+endfm
+
+fmod OCOMP is
+    pr KNOWLEDGE .
+    pr STATUS .
+    pr LIST{Qubit} .
+    pr LIST{BasisIdx} .
+    pr LIST{Ack} .
+    pr NAT .
+
+    sort OComp .
+
+    op (alice:_) : Knowledge -> OComp [ctor] .
+    op (bob:_) : Knowledge -> OComp [ctor] .
+    op (eve:_) : Knowledge -> OComp [ctor] .
+    op (ch:_) : List{Qubit} -> OComp [ctor] .
+    op (a2b:_) : List{Ack} -> OComp [ctor] .
+    op (b2a:_) : List{BasisIdx} -> OComp [ctor] .
+    op (status:_) : Status -> OComp [ctor] .
+    op (cnt:_) : Nat -> OComp [ctor] .
+endfm
+
+view OComp from TRIV to OCOMP is
+    sort Elt to OComp .
+endv
+
+fmod OCOMP-SOUP is
+    pr SOUP{OComp} .
+endfm
+
+fmod CONFIG is
+    pr OCOMP-SOUP .
+    sorts Config .
+    op {_} : Soup{OComp} -> Config [ctor] .
+    ops init init2 init3 init4 init5 init10 init15 init20 : -> Config .
+    eq init = { (cnt: 1) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init2 = { (cnt: 2) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init3 = { (cnt: 3) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init4 = { (cnt: 4) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init5 = { (cnt: 5) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init10 = { (cnt: 10) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init15 = { (cnt: 15) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+    eq init20 = { (cnt: 20) (alice: emp) (eve: emp) (bob: emp) (status: idle) (ch: nil) (b2a: nil) (a2b: nil) } .
+endfm
+
+mod BB84 is
+    pr CONFIG .
+
+    var OCs : Soup{OComp} .
+    vars N N' : Nat .
+    vars AK BK EK : Knowledge .
+    vars K K' : Bit .
+    vars B B' : Basis .
+    vars ACK : Ack .
+    
+    --- initialization
+    crl [init] : { (status: idle) (cnt: N) OCs } 
+    => { (status: aInitKey) (cnt: N) OCs } if N > 0 .
+
+    --- Alice inits key
+    rl [aInitKey0] : { (status: aInitKey) (alice: AK) (cnt: N) OCs }
+    => { (status: aInitBasis) (alice: (key(0, N) AK)) (cnt: N) OCs } .
+
+    rl [aInitKey1] : { (status: aInitKey) (alice: AK) (cnt: N) OCs }
+    => { (status: aInitBasis) (alice: (key(1, N) AK)) (cnt: N) OCs } .
+
+    --- Alice inits basis
+    rl [aInitBasis1] : { (status: aInitBasis) (alice: AK) (cnt: N) OCs }
+    => { (status: bInitBasis) (alice: (basis(+, N) AK)) (cnt: N) OCs } .
+
+    rl [aInitBasis2] : { (status: aInitBasis) (alice: AK) (cnt: N) OCs }
+    => { (status: bInitBasis) (alice: (basis(x, N) AK)) (cnt: N) OCs } .
+
+    --- bob init basis
+    rl [bInitBasis1] : { (status: bInitBasis) (bob: BK) (cnt: N) OCs }
+    => { (status: eInitBasis) (bob: (basis(+, N) BK)) (cnt: N) OCs } .
+
+    rl [bInitBasis2] : { (status: bInitBasis) (bob: BK) (cnt: N) OCs }
+    => { (status: eInitBasis) (bob: (basis(x, N) BK)) (cnt: N) OCs } .
+
+    --- eve init basis 
+    rl [eInitBasis1] : { (status: eInitBasis) (eve: EK) (cnt: N) OCs }
+    => { (status: exchange) (eve: (basis(+, N) EK)) (cnt: N) OCs } .
+
+    rl [eInitBasis2] : { (status: eInitBasis) (eve: EK) (cnt: N) OCs }
+    => { (status: exchange) (eve: (basis(x, N) EK)) (cnt: N) OCs } .
+
+    --- alice sends a qubit
+    rl [aSend] : 
+    { (status: exchange) (ch: nil) (alice: (key(K, N) basis(B, N) AK)) (cnt: N) OCs }
+    => { (status: exchange) (ch: qubit(K, B)) (alice: (key(K, N) basis(B, N) AK)) (cnt: N) OCs } .
+
+    --- eve intercepts and resends the qubit
+    crl [eSameBasis] :
+    { (status: exchange) (ch: qubit(K, B)) (eve: (basis(B, N) EK)) (cnt: N) OCs }
+    => { (status: exchange) (ch: qubit(K, B)) (eve: (key(K, N) basis(B, N) EK)) (cnt: N) OCs } 
+    if not existKeyByIdx(EK, N) .
+
+    crl [eNotSameBasis1] :
+    { (status: exchange) (ch: qubit(K, B)) (eve: (basis(B', N) EK)) (cnt: N) OCs }
+    => { (status: exchange) (ch: qubit(0, B')) (eve: (key(0, N) basis(B', N) EK)) (cnt: N) OCs } 
+    if not existKeyByIdx(EK, N)
+    /\ B =/= B' .
+
+    crl [eNotSameBasis2] :
+    { (status: exchange) (ch: qubit(K, B)) (eve: (basis(B', N) EK)) (cnt: N) OCs }
+    => { (status: exchange) (ch: qubit(1, B')) (eve: (key(1, N) basis(B', N) EK)) (cnt: N) OCs } 
+    if not existKeyByIdx(EK, N)
+    /\ B =/= B' .
+    
+    --- bob measures the qubit
+    rl [bSameBasis] :
+    { (status: exchange) (ch: qubit(K, B)) (bob: (basis(B, N) BK)) (cnt: N) OCs }
+    => { (status: discuss) (ch: nil) (bob: (key(K, N) basis(B, N) BK)) (cnt: N) OCs } .
+    
+    crl [bNotSameBasis1] :
+    { (status: exchange) (ch: qubit(K, B)) (bob: (basis(B', N) BK)) (cnt: N) OCs }
+    => { (status: discuss) (ch: nil) (bob: (key(0, N) basis(B', N) BK)) (cnt: N) OCs } 
+    if B =/= B' .
+
+    crl [bNotSameBasis2] :
+    { (status: exchange) (ch: qubit(K, B)) (bob: (basis(B', N) BK)) (cnt: N) OCs }
+    => { (status: discuss) (ch: nil) (bob: (key(1, N) basis(B', N) BK)) (cnt: N) OCs } 
+    if B =/= B' .
+
+    --- bob sends (basis, index) to alice
+    rl [bAnnounce] :
+    { (status: discuss) (b2a: nil) (a2b: nil) (bob: (basis(B, N) BK)) (cnt: N) OCs }
+    => { (status: discuss) (b2a: basis(B, N)) (a2b: nil) (bob: (basis(B, N) BK)) (cnt: N) OCs } .
+
+    --- alice sends acknowledgment to bob
+    crl [aliceAck] :
+    { (status: discuss) (b2a: basis(B, N)) (a2b: nil) (alice: (basis(B', N) AK)) (cnt: N) OCs }
+    =>  { (status: discuss) (b2a: basis(B, N)) (a2b: ACK) (alice: (ack(ACK, N) basis(B', N) AK)) (cnt: N) OCs } 
+    if ACK := (if B == B' then ok else notOk fi).
+    
+    --- bob confirms acknowledgment from bob
+    rl [bConfirmAck] :
+    { (status: discuss) (b2a: basis(B, N)) (a2b: ACK) (bob: (basis(B, N) BK)) (cnt: N) OCs }
+    =>  { (status: idle) (b2a: nil) (a2b: nil) (bob: (ack(ACK, N) basis(B, N) BK)) (cnt: sd(N, 1)) OCs } .
+
+    rl [stutter] : { (cnt: 0) OCs } => { (cnt: 0) OCs } .
+endm
+
+sload model-checker
+
+mod BB84-PREDS is
+    protecting BB84 .
+    including SATISFACTION .
+    
+    subsort Config < State .
+    
+    op done : Nat -> Prop [ctor] .
+    op evePresent : Nat -> Prop [ctor] .
+    op sameBasis : Nat -> Prop [ctor] .
+    op sameKey : Nat -> Prop [ctor] .
+    
+    var Idx : Nat .
+    var OCs : Soup{OComp} .
+    vars AK BK EK : Knowledge .
+    vars B B' : Basis .
+    vars K K' : Bit .
+    vars ACK ACK' : Ack .
+
+    eq { (alice: (ack(ACK, Idx) EK)) (bob: (ack(ACK', Idx) EK)) OCs } |= done(Idx) = true .
+    eq { OCs } |= done(Idx) = false [owise] .
+
+    eq { (eve: (key(K, Idx) EK)) OCs } |= evePresent(Idx) = true .
+    eq { OCs } |= evePresent(Idx) = false [owise] .
+
+    eq { (alice: (basis(B, Idx) AK)) (bob: (basis(B, Idx) BK)) OCs } |= sameBasis(Idx) = true .
+    eq { OCs } |= sameBasis(Idx) = false [owise] .
+    
+    eq { (alice: (key(K, Idx) AK)) (bob: (key(K, Idx) BK)) OCs } |= sameKey(Idx) = true .
+    eq { OCs } |= sameKey(Idx) = false [owise] .
+endm
+
+mod BB84-FORMULAE is
+    pr BB84-PREDS .
+    pr MODEL-CHECKER .
+    
+    var N : Nat .
+
+    op keyAgreement : Nat -> Formula .
+    eq keyAgreement(0) = True .
+    ceq keyAgreement(N) = keyAgreement(sd(N, 1)) /\ ([] ((sameBasis(N) /\ ~ evePresent(N) /\ done(N)) -> sameKey(N))) if N > 0 .
+
+    op eveDetected : Nat -> Formula .
+    eq eveDetected(0) = True .
+    ceq eveDetected(N) = eveDetected(sd(N, 1)) /\ ([] ((sameBasis(N) /\ ~ sameKey(N) /\ done(N)) -> evePresent(N))) if N > 0 .
+endm
+
+mod BB84-CHECK is
+    protecting BB84-FORMULAE . 
+    including MODEL-CHECKER .
+endm
+
+red in BB84-CHECK : modelCheck(init2, keyAgreement(2)) .
+--- red in BB84-CHECK : modelCheck(init3, keyAgreement(3)) .
+--- red in BB84-CHECK : modelCheck(init4, keyAgreement(4)) .
+--- red in BB84-CHECK : modelCheck(init5, keyAgreement(5)) .
+
+red in BB84-CHECK : modelCheck(init2, eveDetected(2)) .
+--- red in BB84-CHECK : modelCheck(init3, eveDetected(3)) .
+--- red in BB84-CHECK : modelCheck(init4, eveDetected(4)) .
+--- red in BB84-CHECK : modelCheck(init5, eveDetected(5)) .

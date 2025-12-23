@@ -1,0 +1,467 @@
+mod* RAND principal-sort Rand {
+    [Rand]
+}
+
+mod! KEY principal-sort Key {
+    [Key]
+    ops 0 1 : -> Key {constr}
+    eq (0 = 1) = false .
+}
+
+mod! BASIS principal-sort Basis {
+    [Basis]
+    ops + x : -> Basis {constr}
+    eq (+ = x) = false .
+}
+
+mod! QUBIT {
+    pr(KEY + BASIS)
+    [Qubit]
+    op qubit : Key Basis -> Qubit {constr}
+    op k : Qubit -> Key
+    op b : Qubit -> Basis
+    --
+    var K : Key
+    var B : Basis
+    vars KB KB' : Qubit
+    --
+    eq (KB = KB') = (k(KB) = k(KB') and b(KB) = b(KB')) .
+    eq k(qubit(K,B)) = K .
+    eq b(qubit(K,B)) = B .
+}
+
+mod! ACK principal-sort Ack {
+    [Ack]
+    ops ok notOk : -> Ack {constr}
+    eq (ok = notOk) = false .
+}
+
+mod! PAIR(X :: TRIV, Y :: TRIV) {
+    [Pair]
+    op (_,_) : Elt.X Elt.Y -> Pair {constr}
+    op 1* : Pair -> Elt.X
+    op 2* : Pair -> Elt.Y
+    var X : Elt.X
+    var Y : Elt.Y
+    eq 1*((X,Y)) = X .
+    eq 2*((X,Y)) = Y .
+}
+
+mod! KEY-KNOWLEDGE principal-sort KeyKL {
+    pr(PAIR(RAND,KEY) * {
+        sort Pair -> KeyKL,
+        op 1* -> rand,
+        op 2* -> key
+    })
+    vars R R' : Rand
+    vars K K' : Key
+    eq ((R,K) = (R',K')) = (R = R' and K = K') .
+}
+
+mod! BASIS-KNOWLEDGE principal-sort BasisKL {
+    pr(PAIR(RAND,BASIS) * {
+        sort Pair -> BasisKL,
+        op 1* -> rand,
+        op 2* -> basis
+    })
+    vars R R' : Rand
+    vars B B' : Basis
+    eq ((R,B) = (R',B')) = (R = R' and B = B') .
+}
+
+mod! ACK-KNOWLEDGE principal-sort AckKL {
+    pr(PAIR(RAND,ACK) * {
+        sort Pair -> AckKL,
+        op 1* -> rand,
+        op 2* -> ack
+    })
+    vars R R' : Rand
+    vars A A' : Ack
+    eq ((R,A) = (R',A')) = (R = R' and A = A') .
+}
+
+mod! SET(D :: TRIV) {
+    [Elt.D < Set]
+    op empty : -> Set {constr}
+    op __ : Set Set -> Set {constr assoc comm id: empty}
+    op _\in_ : Elt.D Set -> Bool
+    --
+    var S : Set
+    vars E E' : Elt.D
+    --
+    eq E E = E .
+    eq E \in empty = false .
+    eq E \in (E' S) = (E = E') or (E \in S) .
+}
+
+mod! KEY-KNOWLEDGE-SET {
+    pr(RAND)
+    pr(SET(KEY-KNOWLEDGE) * {sort Set -> KeyKLSet})
+    [Key ErrKey < Key&Err]
+    -- 
+    op errK : -> ErrKey {constr}
+    -- 
+    vars KL KL' : KeyKL
+    vars KLS KLS' : KeyKLSet
+    vars R R2 : Rand
+    -- 
+    eq (KL \in empty) = false .
+    eq (KL \in (KL' KLS)) = (rand(KL) = rand(KL') and key(KL) = key(KL')) or (KL \in KLS) .
+    -- 
+    op hasKey : KeyKLSet Rand -> Bool
+    eq hasKey(empty,R) = false .
+    eq hasKey(KL KLS,R) = (rand(KL) = R) or hasKey(KLS,R) .
+    -- 
+    op key : KeyKLSet Rand -> Key&Err
+    eq key(empty,R) = errK .
+    eq key(KL KLS,R) = (if (rand(KL) = R) then key(KL) else key(KLS,R) fi) .
+}
+
+mod! BASIS-KNOWLEDGE-SET {
+    pr(RAND)
+    pr(SET(BASIS-KNOWLEDGE) * {sort Set -> BasisKLSet})
+    [Basis ErrBasis < Basis&Err]
+    -- 
+    op errB : -> ErrBasis {constr}
+    -- 
+    vars KL KL' : BasisKL
+    vars KLS KLS' : BasisKLSet
+    vars R R2 : Rand
+    -- 
+    eq (KL \in empty) = false .
+    eq (KL \in (KL' KLS)) = (rand(KL) = rand(KL') and basis(KL) = basis(KL')) or (KL \in KLS) .
+    -- 
+    op hasBasis : BasisKLSet Rand -> Bool
+    eq hasBasis(empty,R) = false .
+    eq hasBasis(KL KLS,R) = (rand(KL) = R) or hasBasis(KLS,R) .
+    -- 
+    op basis : BasisKLSet Rand -> Basis&Err
+    eq basis(empty,R) = errB .
+    eq basis(KL KLS,R) = (if (rand(KL) = R) then basis(KL) else basis(KLS,R) fi) .
+}
+
+mod! ACK-KNOWLEDGE-SET {
+    pr(RAND)
+    pr(SET(ACK-KNOWLEDGE) * {sort Set -> AckKLSet})
+    [Ack ErrAck < Ack&Err]
+    -- 
+    op errA : -> ErrAck {constr}
+    -- 
+    vars KL KL' : AckKL
+    vars KLS KLS' : AckKLSet
+    vars R R2 : Rand
+    -- 
+    eq (KL \in empty) = false .
+    eq (KL \in (KL' KLS)) = (rand(KL) = rand(KL') and ack(KL) = ack(KL')) or (KL \in KLS) .
+    -- 
+    op hasAck : AckKLSet Rand -> Bool
+    eq hasAck(empty,R) = false .
+    eq hasAck(KL KLS,R) = (rand(KL) = R) or hasAck(KLS,R) .
+    -- 
+    op ack : AckKLSet Rand -> Ack&Err
+    eq ack(empty,R) = errA .
+    eq ack(KL KLS,R) = (if (rand(KL) = R) then ack(KL) else ack(KLS,R) fi) .
+}
+
+mod! Q-MESSAGE {
+    pr(RAND + QUBIT)
+    [QMsg ErrQMsg < QMsg&Err]
+    op qm : Rand Qubit -> QMsg {constr}
+    op errQM : -> ErrQMsg {constr}
+    -- 
+    vars R R' : Rand
+    vars KB KB' : Qubit
+    -- 
+    eq (errQM = qm(R,KB)) = false .
+    eq (qm(R,KB) = qm(R',KB')) = (R = R' and KB = KB') .
+    -- lemmas
+    op qm-lm1 : Rand Rand Qubit Qubit -> Bool
+    eq qm-lm1(R,R',KB,KB') = not(R = R') implies not(qm(R,KB) = qm(R',KB')) .
+    -- 
+    op qm-lm2 : Rand Rand Qubit Qubit -> Bool
+    eq qm-lm2(R,R',KB,KB') = (qm(R,KB) = qm(R',KB')) implies (R = R' and KB = KB') .
+}
+
+mod! CELL {
+    pr(Q-MESSAGE)
+    [QMsg < Cell]
+    op emp : -> Cell {constr}
+    op isEmp : Cell -> Bool
+    op hd : Cell -> QMsg&Err
+    op tl : Cell -> Cell
+    --
+    var E : QMsg
+    var C : Cell
+    --
+    eq (emp = E) = false .
+    -- 
+    eq isEmp(emp) = true .
+    eq isEmp(E) = false .
+    -- 
+    eq hd(E) = E .
+    eq hd(emp) = errQM .
+    -- 
+    eq tl(C) = emp .
+}
+
+mod! QNETWORK {
+    pr(CELL * { sort Cell -> QNetwork })
+    -- 
+    vars R R' : Rand
+    var KB : Qubit
+    var QNW : QNetwork
+    -- 
+    op hasQM : QNetwork Rand -> Bool
+    eq hasQM(emp,R') = false .
+    eq hasQM(qm(R,KB),R') = (R = R') .
+    -- lemmas
+    op qnw-lm1 : QNetwork Rand Qubit -> Bool
+    eq qnw-lm1(QNW,R,KB) = (hd(QNW) = qm(R,KB)) implies hasQM(QNW,R) .
+}
+
+mod! MESSAGE principal-sort Msg {
+    pr(RAND + QUBIT + ACK)
+    [Msg]
+    -- 
+    op m1 : Rand Basis -> Msg {constr}
+    op m2 : Rand Ack -> Msg {constr}
+    -- 
+    op m1? : Msg -> Bool
+    op m2? : Msg -> Bool
+    -- 
+    op rand : Msg -> Rand
+    op basis : Msg -> Basis
+    op ack : Msg -> Ack
+    -- 
+    vars M1 M2 M : Msg
+    var R : Rand
+    var B : Basis
+    var A : Ack
+    -- 
+    eq m1?(m1(R,B)) = true .
+    eq m1?(m2(R,A)) = false .
+    eq m2?(m1(R,B)) = false .
+    eq m2?(m2(R,A)) = true .
+    -- 
+    eq rand(m1(R,B)) = R .
+    eq rand(m2(R,A)) = R .
+    eq basis(m1(R,B)) = B .
+    eq ack(m2(R,A)) = A .
+    -- 
+    ceq (M1 = M2) = (m1?(M2) and rand(M1) = rand(M2) and basis(M1) = basis(M2)) if m1?(M1) .
+    ceq (M1 = M2) = (m2?(M2) and rand(M1) = rand(M2) and ack(M1) = ack(M2)) if m2?(M1) .
+}
+
+mod! BAG(D :: TRIV) {
+    [Elt.D < Bag]
+    op void : -> Bag {constr}
+    op _,_ : Bag Bag -> Bag {constr assoc comm id: void}
+    op _\in_ : Elt.D Bag -> Bool
+    --
+    var B : Bag
+    vars E E' : Elt.D
+    --
+    eq E \in void = false .
+    eq E \in (E', B) = (E = E') or (E \in B) .
+}
+
+mod! NETWORK {
+    pr(BAG(MESSAGE) * { sort Bag -> Network })
+    -- 
+    var NW : Network
+    var M : Msg
+    var R : Rand
+    var A : Ack
+    var B : Basis
+    -- 
+    op hasM : Network Rand -> Bool
+    eq hasM(void,R) = false .
+    eq hasM((M,NW),R) = (rand(M) = R) or hasM(NW,R) .
+    -- lemmas
+    op nw-lm1 : Network Rand Ack -> Bool
+    eq nw-lm1(NW,R,A) = (m2(R,A) \in NW) implies hasM(NW,R) .
+}
+
+mod! BB84 {
+    pr(KEY-KNOWLEDGE-SET + BASIS-KNOWLEDGE-SET + ACK-KNOWLEDGE-SET)
+    pr(SET(RAND) * { sort Set -> URand})
+    pr(QNETWORK)
+    pr(NETWORK)
+    [Sys]
+    -- initial states
+    op init : -> Sys {constr}
+    -- transitions
+    op sdqm : Sys Rand Key Basis        -> Sys {constr}
+    op sdm1 : Sys Rand Qubit Basis Key  -> Sys {constr}
+    op sdm2 : Sys Rand Basis Basis      -> Sys {constr}
+    op cfm  : Sys Rand Ack              -> Sys {constr}
+    op fkqm : Sys Rand Qubit Basis Key  -> Sys {constr}
+    -- observation functions
+    op ur       : Sys -> URand
+    op nw       : Sys -> Network
+    op qnw      : Sys -> QNetwork
+    op sKeys    : Sys -> KeyKLSet
+    op sBases   : Sys -> BasisKLSet
+    op sAcks    : Sys -> AckKLSet
+    op rKeys    : Sys -> KeyKLSet
+    op rBases   : Sys -> BasisKLSet
+    op rAcks    : Sys -> AckKLSet
+    op iKeys    : Sys -> KeyKLSet
+    op iBases   : Sys -> BasisKLSet
+    -- 
+    var S : Sys
+    var M : Msg
+    var R : Rand
+    var K : Key
+    vars B B' : Basis
+    var KB : Qubit
+    var A : Ack
+
+    -- for initial states
+    eq ur(init)     = empty .
+    eq nw(init)     = void .
+    eq qnw(init)    = emp .
+    eq sKeys(init)  = empty .
+    eq sBases(init) = empty .
+    eq sAcks(init)  = empty .
+    eq rKeys(init)  = empty .
+    eq rBases(init) = empty .
+    eq rAcks(init)  = empty . 
+    eq iKeys(init)  = empty .
+    eq iBases(init) = empty .
+
+    -- for sdqm: sending the qubit from Alice to Bob
+    op c-sdqm : Sys Rand Key Basis -> Bool
+    eq c-sdqm(S,R,K,B) = not(R \in ur(S)) and isEmp(qnw(S)) and 
+                         not(hasKey(sKeys(S),R)) and not(hasBasis(sBases(S),R)) .
+    -- 
+    ceq ur(sdqm(S,R,K,B))       = R ur(S) if c-sdqm(S,R,K,B) .
+    eq  nw(sdqm(S,R,K,B))       = nw(S) .
+    ceq qnw(sdqm(S,R,K,B))      = qm(R,qubit(K,B)) if c-sdqm(S,R,K,B) .
+    ceq sKeys(sdqm(S,R,K,B))    = (R,K) sKeys(S) if c-sdqm(S,R,K,B) .
+    ceq sBases(sdqm(S,R,K,B))   = (R,B) sBases(S) if c-sdqm(S,R,K,B) .
+    eq  sAcks(sdqm(S,R,K,B))    = sAcks(S) .
+    eq  rKeys(sdqm(S,R,K,B))    = rKeys(S) .
+    eq  rBases(sdqm(S,R,K,B))   = rBases(S) .
+    eq  rAcks(sdqm(S,R,K,B))    = rAcks(S) .
+    eq  iKeys(sdqm(S,R,K,B))    = iKeys(S) .
+    eq  iBases(sdqm(S,R,K,B))   = iBases(S) .
+    ceq sdqm(S,R,K,B)           = S if not c-sdqm(S,R,K,B) .
+    
+    -- for sdm1: sending the basis from Bob to Alice
+    op c-sdm1 : Sys Rand Qubit Basis Key -> Bool
+    eq c-sdm1(S,R,KB,B,K) = not(isEmp(qnw(S))) and (hd(qnw(S)) = qm(R,KB)) and
+                            not(hasBasis(rBases(S),R)) .
+    -- 
+    eq  ur(sdm1(S,R,KB,B,K))      = ur(S) .
+    ceq nw(sdm1(S,R,KB,B,K))      = m1(R,B), nw(S) if c-sdm1(S,R,KB,B,K) .
+    ceq qnw(sdm1(S,R,KB,B,K))     = tl(qnw(S)) if c-sdm1(S,R,KB,B,K) .
+    eq  sKeys(sdm1(S,R,KB,B,K))   = sKeys(S) .
+    eq  sBases(sdm1(S,R,KB,B,K))  = sBases(S) .
+    eq  sAcks(sdm1(S,R,KB,B,K))   = sAcks(S) .
+    ceq rKeys(sdm1(S,R,KB,B,K))   = (if B = b(KB) then (R,k(KB)) else (R,K) fi) rKeys(S) if c-sdm1(S,R,KB,B,K) .
+    ceq rBases(sdm1(S,R,KB,B,K))  = (R,B) rBases(S) if c-sdm1(S,R,KB,B,K) .
+    eq  rAcks(sdm1(S,R,KB,B,K))   = rAcks(S) .
+    eq  iKeys(sdm1(S,R,KB,B,K))   = iKeys(S) .
+    eq  iBases(sdm1(S,R,KB,B,K))  = iBases(S) .
+    ceq sdm1(S,R,KB,B,K)          = S if not c-sdm1(S,R,KB,B,K) .
+
+    -- for sdm2: sending an ack from Alice to Bob
+    op c-sdm2 : Sys Rand Basis Basis -> Bool
+    eq c-sdm2(S,R,B,B') = hasKey(sKeys(S),R) and hasBasis(sBases(S),R) and 
+                          (basis(sBases(S),R) = B) and m1(R,B') \in nw(S) and
+                          not(hasAck(sAcks(S),R)) .
+    -- 
+    eq  ur(sdm2(S,R,B,B'))      = ur(S) .
+    ceq nw(sdm2(S,R,B,B'))      = (if B = B' then m2(R,ok) else m2(R,notOk) fi), nw(S) if c-sdm2(S,R,B,B') .
+    eq  qnw(sdm2(S,R,B,B'))     = qnw(S) .
+    eq  sKeys(sdm2(S,R,B,B'))   = sKeys(S) .
+    eq  sBases(sdm2(S,R,B,B'))  = sBases(S) .
+    ceq sAcks(sdm2(S,R,B,B'))   = (if B = B' then (R,ok) else (R,notOk) fi) sAcks(S) if c-sdm2(S,R,B,B') .
+    eq  rKeys(sdm2(S,R,B,B'))   = rKeys(S) .
+    eq  rBases(sdm2(S,R,B,B'))  = rBases(S) .
+    eq  rAcks(sdm2(S,R,B,B'))   = rAcks(S) .
+    eq  iKeys(sdm2(S,R,B,B'))   = iKeys(S) .
+    eq  iBases(sdm2(S,R,B,B'))  = iBases(S) .
+    ceq sdm2(S,R,B,B')          = S if not c-sdm2(S,R,B,B') .
+    
+    -- for cfm: confirming ack from Bob for Alice
+    op c-cfm : Sys Rand Ack -> Bool
+    eq c-cfm(S,R,A) = m2(R,A) \in nw(S) and not(hasAck(rAcks(S),R)) .
+    -- 
+    eq  ur(cfm(S,R,A))      = ur(S) .
+    eq  nw(cfm(S,R,A))      = nw(S) .
+    eq  qnw(cfm(S,R,A))     = qnw(S) .
+    eq  sKeys(cfm(S,R,A))   = sKeys(S) .
+    eq  sBases(cfm(S,R,A))  = sBases(S) .
+    eq  sAcks(cfm(S,R,A))   = sAcks(S) .
+    eq  rKeys(cfm(S,R,A))   = rKeys(S) .
+    eq  rBases(cfm(S,R,A))  = rBases(S) .
+    ceq rAcks(cfm(S,R,A))   = (R,A) rAcks(S) if c-cfm(S,R,A) .
+    eq  iKeys(cfm(S,R,A))   = iKeys(S) .
+    eq  iBases(cfm(S,R,A))  = iBases(S) .
+    ceq cfm(S,R,A)          = S if not c-cfm(S,R,A) .
+
+    -- for fkqm: intruder disturbs the quantum state
+    op c-fkqm : Sys Rand Qubit Basis Key -> Bool
+    eq c-fkqm(S,R,KB,B,K) = not(isEmp(qnw(S))) and (hd(qnw(S)) = qm(R,KB)) and 
+                            not(hasBasis(iBases(S),R)) .
+    -- 
+    eq  ur(fkqm(S,R,KB,B,K))      = ur(S) .
+    eq  nw(fkqm(S,R,KB,B,K))      = nw(S) .
+    ceq qnw(fkqm(S,R,KB,B,K))     = (if (b(KB) = B) then qm(R,qubit(k(KB),b(KB))) else qm(R,qubit(K,B)) fi) if c-fkqm(S,R,KB,B,K) .
+    eq  sKeys(fkqm(S,R,KB,B,K))   = sKeys(S) .
+    eq  sBases(fkqm(S,R,KB,B,K))  = sBases(S) .
+    eq  sAcks(fkqm(S,R,KB,B,K))   = sAcks(S) .
+    eq  rKeys(fkqm(S,R,KB,B,K))   = rKeys(S) .
+    eq  rBases(fkqm(S,R,KB,B,K))  = rBases(S) .
+    eq  rAcks(fkqm(S,R,KB,B,K))   = rAcks(S) .
+    ceq iKeys(fkqm(S,R,KB,B,K))   = (if (b(KB) = B) then (R,k(KB)) else (R,K) fi) iKeys(S) if c-fkqm(S,R,KB,B,K) .
+    ceq iBases(fkqm(S,R,KB,B,K))  = (R,B) iBases(S) if c-fkqm(S,R,KB,B,K) .
+    ceq fkqm(S,R,KB,B,K)          = S if not c-fkqm(S,R,KB,B,K) .
+}
+
+mod INV {
+    pr(BB84)
+    -- 
+    var S : Sys
+    var R : Rand
+    vars B B2 : Basis
+    var KB : Qubit
+    -- 
+    op isComplete : Sys Rand -> Bool
+    eq isComplete(S,R) = hasKey(sKeys(S),R) and hasBasis(sBases(S),R) and
+                         hasKey(rKeys(S),R) and hasBasis(rBases(S),R) .
+    -- 
+    op evePresent : Sys Rand -> Bool
+    eq evePresent(S,R) = hasKey(iKeys(S),R) and hasBasis(iBases(S),R) .
+    -- 
+    op sameBasis : Sys Rand -> Bool
+    eq sameBasis(S,R) = (basis(sBases(S),R) = basis(rBases(S),R)) .
+    -- 
+    op sameKey : Sys Rand -> Bool
+    eq sameKey(S,R) = (key(sKeys(S),R) = key(rKeys(S),R)) .
+    -- 
+    op inv1 : Sys Rand -> Bool
+    eq inv1(S,R) = (isComplete(S,R) and sameBasis(S,R) and not(sameKey(S,R)))
+                    implies evePresent(S,R) .
+    -- 
+    op inv2 : Sys Rand -> Bool
+    eq inv2(S,R) = (hasKey(sKeys(S),R) implies hasBasis(sBases(S),R)) and 
+                   (hasBasis(sBases(S),R) implies hasKey(sKeys(S),R)) and 
+                   (hasKey(rKeys(S),R) implies hasBasis(rBases(S),R)) and 
+                   (hasBasis(rBases(S),R) implies hasKey(rKeys(S),R)) and
+                   (hasKey(iKeys(S),R) implies hasBasis(iBases(S),R)) and 
+                   (hasBasis(iBases(S),R) implies hasKey(iKeys(S),R)) .
+    -- 
+    op inv3 : Sys Rand -> Bool
+    eq inv3(S,R) = (not(R \in ur(S)) implies 
+                   (not(hasKey(sKeys(S),R)) and not(hasBasis(sBases(S),R)) and not(hasAck(sAcks(S),R)) and
+                    not(hasKey(rKeys(S),R)) and not(hasBasis(rBases(S),R)) and not(hasAck(rAcks(S),R)) and
+                    not(hasKey(iKeys(S),R)) and not(hasBasis(iBases(S),R))) and
+                    not(hasQM(qnw(S),R)) and not(hasM(nw(S),R))) .
+    -- 
+    op inv4 : Sys Rand Qubit -> Bool
+    eq inv4(S,R,KB) = ((hd(qnw(S)) = qm(R,KB)) and hasBasis(sBases(S),R) and hasKey(sKeys(S),R) and not(hasBasis(iBases(S),R))) 
+                        implies ((key(sKeys(S),R) = k(KB)) and (basis(sBases(S),R) = b(KB))) .
+}

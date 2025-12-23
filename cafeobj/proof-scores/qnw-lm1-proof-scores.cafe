@@ -1,0 +1,13 @@
+--> base case
+open INV .
+    op r : -> Rand .
+    op kb : -> Qubit .
+    red qnw-lm1(emp,r,kb) .
+close
+
+--> induction case
+open INV .
+    ops r r2 : -> Rand .
+    ops kb kb2 : -> Qubit .
+    red qnw-lm1(qm(r2,kb2),r,kb) .
+close
